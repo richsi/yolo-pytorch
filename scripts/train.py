@@ -1,6 +1,6 @@
 from models import MODEL
 import argparse
-from utils.config import load_config, print_config
+from utils.config import load_config
 
 
 def main():
@@ -22,13 +22,10 @@ def main():
     )
 
     args = parser.parse_args()
-
-    print(f"Using config: {args.config}")
-
     config = load_config(args.config)
 
-    print_config(config)
-
+    model = MODEL[config.model.name]
+    
 
 
 
