@@ -1,0 +1,101 @@
+# YOLOv1 Configuration with Automated Dataset Loading
+# Run: python scripts/train.py --config configs/yolov1_pascal.yaml
+
+model:
+  name: "yolov1"
+  input_size: 448
+  
+  backbone:
+    name: "resnet34"
+    pretrained: true
+    freeze_epochs: 5
+    
+  detection_head:
+    grid_size: 7
+    num_boxes: 2
+    num_classes: 20
+    hidden_dim: 4096
+    dropout: 0.5
+
+loss:
+  lambda_coord: 5.0
+  lambda_noobj: 0.5
+  lambda_obj: 1.0
+  lambda_class: 1.0
+  iou_threshold: 0.5
+
+training:
+  batch_size: 64
+  epochs: 135
+  
+  optimizer:
+    name: "sgd"
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0005
+    
+  scheduler:
+    name: "multistep"
+    milestones: [75, 105]
+    gamma: 0.1
+
+# DATASET CONFIGURATION - AUTOMATED LOADING
+data:
+  # Use TorchVision's built-in loader (no manual download needed!)
+  loader: "torchvision"  # Options: "torchvision", "manual", "custom"
+  
+  dataset:
+    name: "voc_detection"
+    year: "2012"           # Options: "2007", "2012"
+    image_set: "trainval"  # "train", "val", "trainval", "test"
+    download: true         # Auto-download to torchvision cache dir
+    
+  num_classes: 20
+  
+  class_names: [
+    "aeroplane", "bicycle", "bird", "boat", "bottle",
+    "bus", "car", "cat", "chair", "cow",
+    "diningtable", "dog", "horse", "motorbike", "person",
+    "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+  ]
+  
+  # Optional: Override cache directory (defaults to ~/.cache/torch)
+  # cache_dir: "data/voc"
+  
+  # Dataloader settings
+  num_workers: 4
+  pin_memory: true
+
+augmentation:
+  train:
+    prob: 0.5
+    random_flip:
+      horizontal: true
+      vertical: false
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+    random_scale:
+      min_scale: 0.8
+      max_scale: 1.2
+    
+  val:
+    random_flip: false
+    color_jitter: false
+
+validation:
+  eval_interval: 5
+  save_best: true
+  nms_threshold: 0.45
+  conf_threshold: 0.01
+  
+logging:
+  log_interval: 50
+  checkpoint_dir: "checkpoints/yolov1_resnet34"
+  wandb_project: "yolo-suite"
+  wandb_name: "yolov1_voc"
+  
+device: "cuda"
+mixed_precision: false
